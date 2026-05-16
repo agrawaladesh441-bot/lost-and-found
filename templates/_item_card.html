@@ -1,0 +1,30 @@
+<div class="item-card h-100">
+  <a href="{{ url_for('item_detail', item_id=item.id) }}" class="text-decoration-none text-reset d-flex flex-column h-100">
+    <div class="item-card-img">
+      {% if item.image_filename %}
+        <img src="{{ url_for('uploaded_file', filename=item.image_filename) }}" alt="{{ item.title }}">
+      {% else %}
+        <div class="placeholder-img">
+          <i class="bi bi-image"></i>
+        </div>
+      {% endif %}
+      <span class="badge bg-{{ item.badge_color }} item-card-badge">
+        {{ item.item_type|upper }}
+      </span>
+      {% if item.status != 'open' %}
+        <span class="badge bg-{{ item.status_color }} item-card-status">
+          {{ item.status|capitalize }}
+        </span>
+      {% endif %}
+    </div>
+    <div class="item-card-body">
+      <div class="text-uppercase small text-muted mb-1">{{ item.category }}</div>
+      <h6 class="fw-semibold mb-2">{{ item.title }}</h6>
+      <div class="small text-secondary mb-2 line-clamp-2">{{ item.description }}</div>
+      <div class="mt-auto small text-muted d-flex justify-content-between">
+        <span><i class="bi bi-geo-alt"></i> {{ item.location }}</span>
+        <span>{{ item.date_occurred.strftime('%d %b') }}</span>
+      </div>
+    </div>
+  </a>
+</div>

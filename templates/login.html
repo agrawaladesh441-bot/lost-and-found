@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Log in{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card shadow-sm">
+    <div class="text-center mb-4">
+      <div class="brand-mark mx-auto mb-3">L&amp;F</div>
+      <h3 class="fw-bold mb-1">Welcome back</h3>
+      <p class="text-muted small mb-0">Log in to manage your posts and claims.</p>
+    </div>
+
+    <form method="post" novalidate>
+      <div class="mb-3">
+        <label class="form-label">Email address</label>
+        <input type="email" name="email" class="form-control form-control-lg" required autofocus>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-control form-control-lg" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg w-100">Log in</button>
+    </form>
+
+    <div class="text-center mt-4 small">
+      Don't have an account?
+      <a href="{{ url_for('register') }}" class="text-decoration-none fw-semibold">Sign up</a>
+    </div>
+
+    <div class="mt-4 p-3 bg-light rounded small text-muted">
+      <strong>Demo admin:</strong> admin@college.edu / admin123
+    </div>
+  </div>
+</div>
+{% endblock %}

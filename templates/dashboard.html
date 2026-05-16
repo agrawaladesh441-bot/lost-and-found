@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-end flex-wrap mb-4">
+    <div>
+      <p class="text-muted small mb-1">Logged in as</p>
+      <h2 class="fw-bold mb-0">{{ current_user.name }}</h2>
+      <p class="text-muted small">{{ current_user.email }} · Roll: {{ current_user.roll_number }}</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('report_item', item_type='lost') }}" class="btn btn-outline-danger">
+        <i class="bi bi-exclamation-circle"></i> Report Lost
+      </a>
+      <a href="{{ url_for('report_item', item_type='found') }}" class="btn btn-outline-success">
+        <i class="bi bi-check-circle"></i> Report Found
+      </a>
+    </div>
+  </div>
+
+  <ul class="nav nav-pills mb-4 dashboard-tabs" role="tablist">
+    <li class="nav-item">
+      <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#my-posts">
+        My Posts <span class="badge bg-light text-dark ms-1">{{ my_items|length }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="pill" data-bs-target="#claims-on-mine">
+        Claims on My Posts <span class="badge bg-light text-dark ms-1">{{ claims_on_my_items|length }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" data-bs-toggle="pill" data-bs-target="#my-claims">
+        My Claims <span class="badge bg-light text-dark ms-1">{{ my_claims|length }}</span>
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <!-- My Posts -->
+    <div class="tab-pane fade show active" id="my-posts">
+      {% if my_items %}
+        <div class="row g-3">
+          {% for item in my_items %}
+            <div class="col-md-6 col-lg-4">{% include '_item_card.html' %}</div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state text-center py-5">
+          <i class="bi bi-journal-x display-3 text-muted"></i>
+          <h5 class="mt-3">No posts yet</h5>
+          <p class="text-muted">Report a lost or found item to get started.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Claims on My Posts -->
+    <div class="tab-pane fade" id="claims-on-mine">
+      {% if claims_on_my_items %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Item</th>
+                <th>Claimant</th>
+                <th>Message</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for claim in claims_on_my_items %}
+                <tr>
+                  <td>
+                    <a href="{{ url_for('item_detail', item_id=claim.item.id) }}"
+                       class="text-decoration-none fw-semibold">
+                      {{ claim.item.title }}
+                    </a>
+                    <div class="small text-muted">{{ claim.item.item_type|capitalize }}</div>
+                  </td>
+                  <td>
+                    {{ claim.claimant.name }}
+                    <div class="small text-muted">{{ claim.claimant.email }}</div>
+                  </td>
+                  <td class="small" style="max-width: 280px;">{{ claim.message }}</td>
+                  <td class="small text-muted">{{ claim.created_at.strftime('%d %b, %H:%M') }}</td>
+                  <td><span class="badge bg-{{ claim.status_color }}">{{ claim.status }}</span></td>
+                  <td>
+                    {% if claim.status == 'pending' %}
+                      <form method="post" action="{{ url_for('handle_claim', claim_id=claim.id, action='approve') }}" class="d-inline">
+                        <button class="btn btn-sm btn-success" type="submit"
+                                onclick="return confirm('Approve this claim and mark item resolved?');">
+                          Approve
+                        </button>
+                      </form>
+                      <form method="post" action="{{ url_for('handle_claim', claim_id=claim.id, action='reject') }}" class="d-inline">
+                        <button class="btn btn-sm btn-outline-danger" type="submit">Reject</button>
+                      </form>
+                    {% else %}
+                      <span class="text-muted small">No action</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state text-center py-5">
+          <i class="bi bi-inbox display-3 text-muted"></i>
+          <h5 class="mt-3">No claims yet</h5>
+          <p class="text-muted">When others claim items you posted, they'll appear here.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- My Claims -->
+    <div class="tab-pane fade" id="my-claims">
+      {% if my_claims %}
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Item</th>
+                <th>Your Message</th>
+                <th>Submitted</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for claim in my_claims %}
+                <tr>
+                  <td>
+                    <a href="{{ url_for('item_detail', item_id=claim.item.id) }}"
+                       class="text-decoration-none fw-semibold">
+                      {{ claim.item.title }}
+                    </a>
+                    <div class="small text-muted">By {{ claim.item.owner.name }}</div>
+                  </td>
+                  <td class="small" style="max-width: 360px;">{{ claim.message }}</td>
+                  <td class="small text-muted">{{ claim.created_at.strftime('%d %b, %H:%M') }}</td>
+                  <td><span class="badge bg-{{ claim.status_color }}">{{ claim.status }}</span></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="empty-state text-center py-5">
+          <i class="bi bi-send display-3 text-muted"></i>
+          <h5 class="mt-3">No claims submitted</h5>
+          <p class="text-muted">When you claim an item, you'll see its status here.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

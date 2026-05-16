@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container py-5">
+    <div class="row align-items-center g-5 py-md-4">
+      <div class="col-lg-7">
+        <span class="badge rounded-pill bg-soft-primary text-primary mb-3 px-3 py-2">
+          <i class="bi bi-stars"></i> Reuniting students with their things
+        </span>
+        <h1 class="display-4 fw-bold lh-sm mb-3 hero-title">
+          Lost something on campus?<br>
+          <span class="text-primary">Let's find it together.</span>
+        </h1>
+        <p class="lead text-secondary mb-4">
+          A simple, centralized place for the whole college to report and recover lost items.
+          Post what you've lost. Post what you've found. Help someone get their stuff back.
+        </p>
+        <div class="d-flex flex-wrap gap-2">
+          {% if current_user.is_authenticated %}
+            <a href="{{ url_for('report_item', item_type='lost') }}" class="btn btn-primary btn-lg px-4">
+              <i class="bi bi-exclamation-circle"></i> Report a Lost Item
+            </a>
+            <a href="{{ url_for('report_item', item_type='found') }}" class="btn btn-outline-success btn-lg px-4">
+              <i class="bi bi-check-circle"></i> Report a Found Item
+            </a>
+          {% else %}
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4">Get Started</a>
+            <a href="{{ url_for('browse') }}" class="btn btn-outline-dark btn-lg px-4">Browse Items</a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="hero-stats">
+          <div class="stat-card">
+            <div class="stat-num">{{ stats.total_lost }}</div>
+            <div class="stat-label"><i class="bi bi-exclamation-circle text-danger"></i> Lost Reports</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">{{ stats.total_found }}</div>
+            <div class="stat-label"><i class="bi bi-check-circle text-success"></i> Found Items</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">{{ stats.resolved }}</div>
+            <div class="stat-label"><i class="bi bi-trophy text-warning"></i> Reunited</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">{{ stats.users }}</div>
+            <div class="stat-label"><i class="bi bi-people text-info"></i> Students</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container py-5">
+  <h3 class="section-heading text-center mb-4">How it works</h3>
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="how-card">
+        <div class="how-num">01</div>
+        <h5>Report it</h5>
+        <p class="text-secondary mb-0">
+          Lost or found something? Post a quick report with a photo, location, and description.
+        </p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="how-card">
+        <div class="how-num">02</div>
+        <h5>Get matched</h5>
+        <p class="text-secondary mb-0">
+          Browse or search the catalogue. We suggest possible matches automatically.
+        </p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="how-card">
+        <div class="how-num">03</div>
+        <h5>Reunite</h5>
+        <p class="text-secondary mb-0">
+          Submit a claim, verify ownership, and arrange a handover. Mark resolved when done.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container py-4">
+  <div class="d-flex align-items-end justify-content-between mb-3">
+    <h3 class="section-heading mb-0"><span class="dot bg-danger me-2"></span>Recently Lost</h3>
+    <a href="{{ url_for('browse', type='lost') }}" class="text-decoration-none">View all <i class="bi bi-arrow-right"></i></a>
+  </div>
+  {% if recent_lost %}
+    <div class="row g-3">
+      {% for item in recent_lost %}
+        <div class="col-md-6 col-lg-4">{% include '_item_card.html' %}</div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No lost items reported yet.</p>
+  {% endif %}
+</section>
+
+<section class="container py-4 mb-4">
+  <div class="d-flex align-items-end justify-content-between mb-3">
+    <h3 class="section-heading mb-0"><span class="dot bg-success me-2"></span>Recently Found</h3>
+    <a href="{{ url_for('browse', type='found') }}" class="text-decoration-none">View all <i class="bi bi-arrow-right"></i></a>
+  </div>
+  {% if recent_found %}
+    <div class="row g-3">
+      {% for item in recent_found %}
+        <div class="col-md-6 col-lg-4">{% include '_item_card.html' %}</div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No found items reported yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

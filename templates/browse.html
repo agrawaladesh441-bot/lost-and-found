@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Browse Items{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-end flex-wrap mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">Browse Items</h2>
+      <p class="text-muted mb-0">All open lost &amp; found posts on campus.</p>
+    </div>
+    <div class="small text-muted">
+      <strong>{{ items|length }}</strong> result{{ '' if items|length == 1 else 's' }}
+    </div>
+  </div>
+
+  <form method="get" class="filter-bar shadow-sm p-3 mb-4">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label small text-muted mb-1">Search</label>
+        <input type="text" name="q" value="{{ keyword }}" class="form-control"
+               placeholder="e.g. blue water bottle">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small text-muted mb-1">Type</label>
+        <select name="type" class="form-select">
+          <option value="all" {{ 'selected' if item_type == 'all' }}>All</option>
+          <option value="lost" {{ 'selected' if item_type == 'lost' }}>Lost</option>
+          <option value="found" {{ 'selected' if item_type == 'found' }}>Found</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small text-muted mb-1">Category</label>
+        <select name="category" class="form-select">
+          <option value="all" {{ 'selected' if category == 'all' }}>All categories</option>
+          {% for cat in categories %}
+            <option value="{{ cat }}" {{ 'selected' if category == cat }}>{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2 d-grid">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-search"></i> Search
+        </button>
+      </div>
+    </div>
+  </form>
+
+  {% if items %}
+    <div class="row g-3">
+      {% for item in items %}
+        <div class="col-md-6 col-lg-4 col-xl-3">{% include '_item_card.html' %}</div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state text-center py-5">
+      <i class="bi bi-inbox display-3 text-muted"></i>
+      <h4 class="mt-3">No items match your filters</h4>
+      <p class="text-muted">Try a different keyword or category.</p>
+      <a href="{{ url_for('browse') }}" class="btn btn-outline-primary">Clear filters</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

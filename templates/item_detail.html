@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}{{ item.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="mb-3">
+    <a href="{{ url_for('browse') }}" class="text-decoration-none small text-muted">
+      <i class="bi bi-arrow-left"></i> Back to browse
+    </a>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="detail-image">
+        {% if item.image_filename %}
+          <img src="{{ url_for('uploaded_file', filename=item.image_filename) }}"
+               alt="{{ item.title }}">
+        {% else %}
+          <div class="placeholder-img large">
+            <i class="bi bi-image"></i>
+            <div class="mt-2 small">No photo provided</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="d-flex gap-2 mb-2">
+        <span class="badge bg-{{ item.badge_color }} px-3 py-2">
+          {{ item.item_type|upper }}
+        </span>
+        <span class="badge bg-{{ item.status_color }} px-3 py-2">
+          {{ item.status|capitalize }}
+        </span>
+        <span class="badge bg-light text-dark px-3 py-2">{{ item.category }}</span>
+      </div>
+
+      <h1 class="fw-bold mb-3">{{ item.title }}</h1>
+
+      <dl class="meta-list">
+        <div>
+          <dt><i class="bi bi-geo-alt"></i> Location</dt>
+          <dd>{{ item.location }}</dd>
+        </div>
+        <div>
+          <dt><i class="bi bi-calendar3"></i> Date {{ 'lost' if item.item_type == 'lost' else 'found' }}</dt>
+          <dd>{{ item.date_occurred.strftime('%d %B %Y') }}</dd>
+        </div>
+        <div>
+          <dt><i class="bi bi-person"></i> Posted by</dt>
+          <dd>{{ item.owner.name }} <span class="text-muted">· {{ item.owner.roll_number }}</span></dd>
+        </div>
+        <div>
+          <dt><i class="bi bi-clock"></i> Posted</dt>
+          <dd>{{ item.created_at.strftime('%d %b %Y, %I:%M %p') }}</dd>
+        </div>
+      </dl>
+
+      <div class="mt-3 p-3 bg-light rounded">
+        <div class="small text-muted fw-semibold mb-1">DESCRIPTION</div>
+        <div>{{ item.description }}</div>
+      </div>
+
+      {% if current_user.is_authenticated and (current_user.id == item.user_id or current_user.is_admin) %}
+        <div class="mt-3 d-flex flex-wrap gap-2">
+          <a href="{{ url_for('edit_item', item_id=item.id) }}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil"></i> Edit
+          </a>
+          {% if item.status == 'open' %}
+            <form method="post" action="{{ url_for('resolve_item', item_id=item.id) }}" class="d-inline">
+              <button type="submit" class="btn btn-success">
+                <i class="bi bi-check2-all"></i> Mark Resolved
+              </button>
+            </form>
+          {% endif %}
+          <form method="post" action="{{ url_for('delete_item', item_id=item.id) }}"
+                onsubmit="return confirm('Delete this item permanently?');" class="d-inline">
+            <button type="submit" class="btn btn-outline-danger">
+              <i class="bi bi-trash"></i> Delete
+            </button>
+          </form>
+        </div>
+      {% endif %}
+
+      {% if current_user.is_authenticated and current_user.id != item.user_id and item.status == 'open' %}
+        <div class="card border-0 shadow-sm mt-4">
+          <div class="card-body">
+            <h5 class="fw-bold mb-2">
+              {% if item.item_type == 'found' %}
+                <i class="bi bi-hand-thumbs-up text-primary"></i> Is this yours?
+              {% else %}
+                <i class="bi bi-eye text-primary"></i> Have you seen this?
+              {% endif %}
+            </h5>
+            <p class="text-muted small">
+              Send a message to the poster. Include details only the real
+              owner would know, like markings or contents.
+            </p>
+            <form method="post" action="{{ url_for('claim_item', item_id=item.id) }}">
+              <textarea name="message" rows="3" class="form-control mb-2"
+                        placeholder="Describe identifying details…" required></textarea>
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="bi bi-send"></i> Submit Claim
+              </button>
+            </form>
+          </div>
+        </div>
+      {% elif not current_user.is_authenticated and item.status == 'open' %}
+        <div class="alert alert-info mt-4 mb-0">
+          <a href="{{ url_for('login') }}" class="alert-link">Log in</a> to submit a claim.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if possible_matches %}
+    <hr class="my-5">
+    <h4 class="fw-bold mb-3">
+      <i class="bi bi-stars text-warning"></i>
+      Possible matches
+    </h4>
+    <p class="text-muted small mb-3">
+      Same category, opposite type. Worth a look.
+    </p>
+    <div class="row g-3">
+      {% for item in possible_matches %}
+        <div class="col-md-6 col-lg-3">{% include '_item_card.html' %}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
